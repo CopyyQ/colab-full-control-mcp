@@ -6,6 +6,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from scripts.start_tunnel import extract_tunnel_url
+
 
 def test_stop_tunnel_is_idempotent_for_stale_pid(tmp_path: Path):
     content_root = tmp_path / "content"
@@ -72,3 +74,8 @@ def test_stop_server_is_idempotent_for_stale_pid(tmp_path: Path):
     assert "was already stopped or unavailable" in result.stdout
     assert "Removed stale PID file." in result.stdout
     assert not pid_path.exists()
+
+
+def test_extract_tunnel_url_finds_trycloudflare_url():
+    text = "INF Starting tunnel\nhttps://example-name.trycloudflare.com connected\n"
+    assert extract_tunnel_url(text) == "https://example-name.trycloudflare.com"

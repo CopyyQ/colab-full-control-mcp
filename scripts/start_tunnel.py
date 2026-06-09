@@ -23,34 +23,47 @@ def tunnel_state_path(settings: Settings) -> Path:
     return ensure_directory(settings.job_root) / "cloudflared_state.json"
 
 
+def tunnel_log_path(settings: Settings) -> Path:
+    return ensure_directory(settings.job_root) / "cloudflared.log"
+
+
+def extract_tunnel_url(text: str) -> str | None:
+    match = URL_RE.search(text)
+    return match.group(0) if match else None
+
+
 def start_tunnel(server_url: str) -> dict[str, str]:
     settings = Settings()
     state_path = tunnel_state_path(settings)
+    log_path = tunnel_log_path(settings)
     command = ["cloudflared", "tunnel", "--url", server_url, "--no-autoupdate"]
     creationflags = getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0) if os.name == "nt" else 0
-    kwargs = {"cwd": str(ROOT), "stdout": subprocess.PIPE, "stderr": subprocess.STDOUT, "text": True}
+    log_path.write_text("", encoding="utf-8")
+    log_handle = log_path.open("ab")
+    kwargs = {"cwd": str(ROOT), "stdout": log_handle, "stderr": subprocess.STDOUT}
     if os.name == "nt":
         kwargs["creationflags"] = creationflags
     else:
         kwargs["start_new_session"] = True
     process = subprocess.Popen(command, **kwargs)
+    log_handle.close()
+
     url = None
     deadline = time.time() + 60
     while time.time() < deadline:
-        assert process.stdout is not None
-        line = process.stdout.readline()
-        if not line:
-            if process.poll() is not None:
+        if log_path.exists():
+            content = log_path.read_text(encoding="utf-8", errors="replace")
+            url = extract_tunnel_url(content)
+            if url:
                 break
-            continue
-        match = URL_RE.search(line)
-        if match:
-            url = match.group(0)
+        if process.poll() is not None:
             break
+        time.sleep(0.5)
     if url is None:
         process.terminate()
-        raise RuntimeError("Failed to capture a trycloudflare URL from cloudflared output")
-    state = {"pid": process.pid, "url": url, "server_url": server_url}
+        log_tail = log_path.read_text(encoding="utf-8", errors="replace")[-4000:] if log_path.exists() else ""
+        raise RuntimeError(f"Failed to capture a trycloudflare URL from cloudflared output. Log tail:\n{log_tail}")
+    state = {"pid": process.pid, "url": url, "server_url": server_url, "log_path": str(log_path)}
     state_path.write_text(json.dumps(state), encoding="utf-8")
     return state
 
@@ -67,4 +80,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
