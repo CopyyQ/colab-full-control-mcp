@@ -15,15 +15,14 @@ def main() -> int:
     settings = Settings()
     pid_path = settings.job_root / "mcp_server.pid"
     if not pid_path.exists():
-        print("Server PID file not found.")
-        return 1
+        print("Server PID file not found. Nothing to stop.")
+        return 0
     pid = int(pid_path.read_text(encoding="utf-8"))
     try:
-        if os.name == "nt":
-            os.kill(pid, signal.SIGTERM)
-        else:
-            os.kill(pid, signal.SIGTERM)
+        os.kill(pid, signal.SIGTERM)
         print(f"Sent termination signal to MCP server pid={pid}")
+    except (ProcessLookupError, OSError) as exc:
+        print(f"MCP server pid={pid} is not running or could not be signaled ({exc}). Removed stale PID file.")
     finally:
         pid_path.unlink(missing_ok=True)
     return 0
@@ -31,4 +30,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
