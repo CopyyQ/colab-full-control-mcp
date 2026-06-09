@@ -16,11 +16,16 @@ def main() -> int:
     settings = Settings()
     state_path = settings.job_root / "cloudflared_state.json"
     if not state_path.exists():
-        print("Tunnel state file not found.")
-        return 1
+        print("Tunnel state file not found. Nothing to stop.")
+        return 0
     state = json.loads(state_path.read_text(encoding="utf-8"))
     pid = int(state["pid"])
-    os.kill(pid, signal.SIGTERM)
+    try:
+        os.kill(pid, signal.SIGTERM)
+    except (ProcessLookupError, OSError) as exc:
+        state_path.unlink(missing_ok=True)
+        print(f"cloudflared pid={pid} is not running or could not be signaled ({exc}). Removed stale tunnel state.")
+        return 0
     state_path.unlink(missing_ok=True)
     print(f"Stopped cloudflared pid={pid}")
     return 0
@@ -28,4 +33,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
