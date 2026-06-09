@@ -24,7 +24,7 @@ def main() -> int:
         os.kill(pid, signal.SIGTERM)
     except (ProcessLookupError, OSError) as exc:
         state_path.unlink(missing_ok=True)
-        print(f"cloudflared pid={pid} is not running or could not be signaled ({exc}). Removed stale tunnel state.")
+        print(f"cloudflared pid={pid} was already stopped or unavailable ({exc}). Removed stale tunnel state.")
         return 0
     state_path.unlink(missing_ok=True)
     print(f"Stopped cloudflared pid={pid}")

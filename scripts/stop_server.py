@@ -22,7 +22,7 @@ def main() -> int:
         os.kill(pid, signal.SIGTERM)
         print(f"Sent termination signal to MCP server pid={pid}")
     except (ProcessLookupError, OSError) as exc:
-        print(f"MCP server pid={pid} is not running or could not be signaled ({exc}). Removed stale PID file.")
+        print(f"MCP server pid={pid} was already stopped or unavailable ({exc}). Removed stale PID file.")
     finally:
         pid_path.unlink(missing_ok=True)
     return 0

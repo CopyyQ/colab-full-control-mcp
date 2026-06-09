@@ -40,6 +40,7 @@ def test_stop_tunnel_is_idempotent_for_stale_pid(tmp_path: Path):
     )
 
     assert result.returncode == 0
+    assert "was already stopped or unavailable" in result.stdout
     assert "Removed stale tunnel state." in result.stdout
     assert not state_path.exists()
 
@@ -68,5 +69,6 @@ def test_stop_server_is_idempotent_for_stale_pid(tmp_path: Path):
     )
 
     assert result.returncode == 0
+    assert "was already stopped or unavailable" in result.stdout
     assert "Removed stale PID file." in result.stdout
     assert not pid_path.exists()
