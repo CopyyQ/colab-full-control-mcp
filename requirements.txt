@@ -1,0 +1,10 @@
+mcp>=1.27.0
+uvicorn>=0.30.0
+starlette>=0.37.0
+psutil>=5.9.0
+nbformat>=5.10.0
+nbclient>=0.10.0
+PyYAML>=6.0.0
+Pillow>=10.0.0
+pytest>=8.0.0
+

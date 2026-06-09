@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "colab-full-control-mcp"
+version = "0.1.0"
+description = "A full-control MCP server designed for Google Colab runtimes."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+  { name = "OpenAI Codex" }
+]
+dependencies = [
+  "mcp>=1.27.0",
+  "uvicorn>=0.30.0",
+  "starlette>=0.37.0",
+  "psutil>=5.9.0",
+  "nbformat>=5.10.0",
+  "nbclient>=0.10.0",
+  "PyYAML>=6.0.0",
+  "Pillow>=10.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0.0",
+]
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+

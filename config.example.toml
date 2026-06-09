@@ -1,0 +1,16 @@
+[server]
+host = "127.0.0.1"
+port = 8000
+mount_path = "/mcp"
+
+[security]
+permission_profile = "DEVELOPER"
+unrestricted_runtime_mode = false
+allowed_roots = ["/content", "/content/drive/MyDrive"]
+audit_log_path = "/content/colab_full_control_mcp_audit.jsonl"
+
+[jobs]
+db_path = "/content/colab_full_control_mcp_jobs.sqlite3"
+work_dir = "/content/.colab_full_control_mcp/jobs"
+session_work_dir = "/content/.colab_full_control_mcp/sessions"
+
